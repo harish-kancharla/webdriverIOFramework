@@ -1,0 +1,25 @@
+version: "2"
+services:
+  test:
+    build: ./poca-regression
+    volumes:
+      - .:/usr/src/wrk
+    depends_on:
+      - "hub"
+      - "zap"
+  hub:
+    image: selenium/hub
+    ports:
+      - "4444:4444"
+  chrome:
+    image: selenium/node-chrome
+    environment:
+            HUB_PORT_4444_TCP_ADDR: hub
+            HUB_PORT_4444_TCP_PORT: 4444
+    links:
+      - hub
+  zap:
+    image: owasp/zap2docker-stable
+    command: zap.sh -daemon -host 0.0.0.0 -port 8090 -config api.disablekey=true -config database.recoverylog=false -config connection.timeoutInSecs=120 -addonupdate -addoninstall pscanrulesAlpha -addoninstall pscanrulesBeta -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    ports:
+      - "8090:8090"
